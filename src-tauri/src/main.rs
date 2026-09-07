@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Serialize, Deserialize};
-use sysinfo::{System, DiskUsage};
+use sysinfo::System;
 use std::sync::{Arc, Mutex};
 use tauri::{State, Emitter};
 
@@ -29,18 +29,20 @@ fn greet(name: &str) -> String {
 
 #[tauri::command]
 fn get_system_stats(state: State<'_, SystemState>) -> Result<SystemStats, String> {
-    let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
+    let (cpu_usage, ram_used, ram_total, ram_usage_pct) = {
+        let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
 
-    // Refresh system info
-    sys.refresh_cpu();
-    sys.refresh_memory();
+        // Refresh system info
+        sys.refresh_cpu();
+        sys.refresh_memory();
 
-    let cpu_usage = sys.global_cpu_info().cpu_usage();
-    let ram_used = sys.used_memory();
-    let ram_total = sys.total_memory();
-    let ram_usage_pct = (ram_used as f32 / ram_total as f32) * 100.0;
+        let usage = sys.global_cpu_info().cpu_usage();
+        let used = sys.used_memory();
+        let total = sys.total_memory();
+        (usage, used, total, (used as f32 / total as f32) * 100.0)
+    };
 
-    // Aggregate disk usage across all disks
+    // Aggregate disk usage across all disks (no lock needed)
     let mut total_disk_space = 0;
     let mut used_disk_space = 0;
     for disk in &sysinfo::Disks::new_with_refreshed_list() {
@@ -111,7 +113,7 @@ fn get_processes(state: State<'_, SystemState>) -> Result<Vec<ProcessInfo>, Stri
 
 #[tauri::command]
 fn kill_process(pid: u32, state: State<'_, SystemState>) -> Result<(), String> {
-    let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
+    let sys = state.sys.lock().map_err(|e| e.to_string())?;
     if let Some(process) = sys.process(sysinfo::Pid::from(pid as usize)) {
         process.kill();
         Ok(())
@@ -121,7 +123,7 @@ fn kill_process(pid: u32, state: State<'_, SystemState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn force_kill_process(pid: u32, state: State<'_, SystemState>) -> Result<(), String> {
+fn force_kill_process(pid: u32, _state: State<'_, SystemState>) -> Result<(), String> {
     use std::process::Command;
     let status = Command::new("cmd")
         .args(["/C", "taskkill", "/F", "/PID", &pid.to_string()])
@@ -145,7 +147,7 @@ pub struct DiskNode {
 }
 
 #[tauri::command]
-fn get_disk_usage(path: String, depth: usize, state: State<'_, SystemState>) -> Result<DiskNode, String> {
+fn get_disk_usage(path: String, depth: usize, _state: State<'_, SystemState>) -> Result<DiskNode, String> {
     use jwalk::WalkDir;
 
     let mut total_size = 0;
@@ -153,11 +155,14 @@ fn get_disk_usage(path: String, depth: usize, state: State<'_, SystemState>) -> 
 
     // We only scan to the requested depth for the initial view
     for entry in WalkDir::new(&path).into_iter().filter_map(|e| e.ok()) {
-        let depth = entry.depth();
-        if depth == 0 { continue; } // root is handled by the caller
-        if depth > 1 { continue; } // Only one level for this simple implementation
+        let current_depth = entry.depth();
+        if current_depth == 0 { continue; } // root is handled by the caller
+        if current_depth > depth { continue; } // respect the requested depth
 
-        let metadata = entry.metadata().map_err(|e| e.to_string())?;
+        let metadata = match entry.metadata() {
+            Ok(m) => m,
+            Err(_) => continue, // Skip files we can't access
+        };
         let size = metadata.len();
         total_size += size;
 
@@ -191,7 +196,6 @@ pub struct NetworkInterface {
 #[tauri::command]
 fn get_network_info() -> Result<Vec<NetworkInterface>, String> {
     use std::process::Command;
-    use std::io::Read;
 
     let output = Command::new("ipconfig")
         .output()
@@ -246,25 +250,26 @@ fn main() {
         .manage(system_state)
         .setup(move |app| {
             let handle = app.handle().clone();
+            let state_for_loop = state_clone.clone();
             tauri::async_runtime::spawn(async move {
                 loop {
-                    {
-                        let mut sys = state_clone.lock().unwrap();
+                    // Calculate disk usage outside the lock
+                    let mut total_disk_space = 0;
+                    let mut used_disk_space = 0;
+                    for disk in &sysinfo::Disks::new_with_refreshed_list() {
+                        total_disk_space += disk.total_space();
+                        used_disk_space += disk.total_space() - disk.available_space();
+                    }
+
+                    let stats = {
+                        let mut sys = state_for_loop.lock().unwrap();
                         sys.refresh_cpu();
                         sys.refresh_memory();
 
-                        // We can't call get_system_stats directly because it needs State
-                        // but we can manually create the stats object
                         let ram_used = sys.used_memory();
                         let ram_total = sys.total_memory();
-                        let mut total_disk_space = 0;
-                        let mut used_disk_space = 0;
-                        for disk in &sysinfo::Disks::new_with_refreshed_list() {
-                            total_disk_space += disk.total_space();
-                            used_disk_space += disk.total_space() - disk.available_space();
-                        }
 
-                        let stats = SystemStats {
+                        SystemStats {
                             cpu_usage: sys.global_cpu_info().cpu_usage(),
                             ram_used,
                             ram_total,
@@ -277,11 +282,11 @@ fn main() {
                                 0.0
                             },
                             uptime: System::uptime(),
-                        };
-
-                        if let Err(e) = handle.emit("sys-stats-update", stats) {
-                            eprintln!("Failed to emit system stats: {}", e);
                         }
+                    };
+
+                    if let Err(e) = handle.emit("sys-stats-update", stats) {
+                        eprintln!("Failed to emit system stats: {}", e);
                     }
                     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
                 }

@@ -1,17 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Search, XCircle, Zap, ExternalLink, Folder } from 'lucide-react';
-
-interface ProcessInfo {
-  pid: number;
-  name: string;
-  cpu_usage: number;
-  memory: number;
-  disk_usage: number;
-  status: string;
-  parent_pid: number | null;
-  exe_path: string;
-}
+import { ProcessInfo } from '../types/system';
 
 export const ProcessManager: React.FC = () => {
   const [processes, setProcesses] = useState<ProcessInfo[]>([]);
@@ -54,6 +44,7 @@ export const ProcessManager: React.FC = () => {
     .sort((a, b) => {
       const aVal = a[sortBy.key];
       const bVal = b[sortBy.key];
+      if (aVal === null || bVal === null) return 0;
       if (aVal < bVal) return sortBy.direction === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortBy.direction === 'asc' ? 1 : -1;
       return 0;

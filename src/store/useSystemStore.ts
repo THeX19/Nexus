@@ -1,15 +1,5 @@
 import { create } from 'zustand';
-
-export interface SystemStats {
-  cpu_usage: number;
-  ram_used: number;
-  ram_total: number;
-  ram_usage_pct: number;
-  disk_used: number;
-  disk_total: number;
-  disk_usage_pct: number;
-  uptime: number;
-}
+import { SystemStats } from '../types/system';
 
 interface SystemState {
   stats: SystemStats | null;

@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Folder, File, ChevronLeft, HardDrive, Database } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
-
-interface DiskNode {
-  name: string;
-  path: string;
-  size: number;
-  is_dir: boolean;
-  children: DiskNode[] | null;
-}
+import { DiskNode } from '../types/system';
 
 export const StorageAnalyzer: React.FC = () => {
   const [currentPath, setCurrentPath] = useState('C:\\');
@@ -34,12 +27,14 @@ export const StorageAnalyzer: React.FC = () => {
   }, [currentPath]);
 
   const navigateUp = () => {
-    const pathParts = currentPath.split('\\');
-    if (pathParts.length <= 2) return; // Already at root (e.g., "C:\")
+    const normalizedPath = currentPath.endsWith('\\') && currentPath.length > 3
+      ? currentPath.slice(0, -1)
+      : currentPath;
+
+    const pathParts = normalizedPath.split('\\');
+    if (pathParts.length <= 1) return;
 
     pathParts.pop();
-    if (pathParts[pathParts.length - 1] === '') pathParts.pop();
-
     const newPath = pathParts.join('\\') + '\\';
     setCurrentPath(newPath);
   };

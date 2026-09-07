@@ -1,1 +1,1 @@
-{}
+{"main-capability":{"identifier":"main-capability","description":"Allow core system access for the main window","local":true,"windows":["main"],"permissions":["core:default","core:event:allow-listen","core:event:default","core:window:default"]}}

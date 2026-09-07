@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Network, Wifi, Globe, AlertCircle, Activity } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
-
-interface NetworkInterface {
-  name: string;
-  ipv4: string;
-  ipv6: string;
-  mac: string;
-  status: string;
-}
+import { NetworkInterface } from '../types/system';
 
 export const NetworkDiagnostics: React.FC = () => {
   const [interfaces, setInterfaces] = useState<NetworkInterface[]>([]);

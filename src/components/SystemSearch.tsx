@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
-import { Search, X, File, ExternalLink } from 'lucide-react';
+import { Search, X, File, ExternalLink, Activity } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
-
-interface ProcessInfo {
-  pid: number;
-  name: string;
-  cpu_usage: number;
-  memory: number;
-  status: string;
-  exe_path: string;
-}
+import { ProcessInfo } from '../types/system';
 
 export const SystemSearch: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -74,7 +66,7 @@ export const SystemSearch: React.FC = () => {
               >
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-zinc-800 rounded-lg text-blue-400">
-                    <Process className="w-5 h-5" />
+                    <Activity className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-white">{res.name}</p>
