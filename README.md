@@ -20,3 +20,10 @@ Nexus is actively being developed. Features may change significantly between ver
 ## License
 
 License information will be added in a future release.
+
+## Screenshots
+
+<img width="1304" height="509" alt="copy 3" src="https://github.com/user-attachments/assets/5aafc500-d815-4f92-8979-60c35a458ea6" />
+<img width="783" height="488" alt="copy 2" src="https://github.com/user-attachments/assets/96f2c4ff-9a73-4111-81d7-9b92f674bcc3" />
+<img width="782" height="485" alt="ChatGPT Image Sep 7, 2026, 11_38_53 AM" src="https://github.com/user-attachments/assets/36697685-2427-42cc-b799-f5d3a5788264" />
+
