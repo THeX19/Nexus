@@ -1,45 +1,45 @@
 # Nexus
 
-Nexus is a Windows desktop system utility focused on system monitoring, process management, and system interaction.
+Nexus is a desktop system utility for **Windows and Arch Linux**, built with Tauri and React. It provides system monitoring, process management, storage analysis, network diagnostics, and command execution.
 
-The project is currently in an early alpha stage. The core application is functional, but some features are still being developed and performance improvements and bug fixes are ongoing.
+Nexus is currently in **beta**. Features, performance improvements, and bug fixes are actively being developed.
 
-## Current Status
+## Features
 
-- Desktop application built with Tauri
-- React-based user interface
-- System monitoring
-- Process search
-- Initial system utilities
-- Early-stage UI and functionality
+- Live CPU and memory charts with session history.
+- Memory and storage capacity gauges.
+- Process search, sorting, pagination, and pause/resume.
+- Process termination controls with confirmation and protection for critical processes.
+- Recursive folder size analysis, scan cancellation, and skipped-entry reporting.
+- Network interface information and custom ping tests.
+- Command execution with history, exit codes, output limits, and timeouts.
+- Five themes, saved preferences, keyboard navigation, and reduced-motion support.
+- English, German, and French interface labels.
 
-## Development
+Available features and behavior may differ between Windows and Linux.
 
-Nexus is actively being developed. Features may change significantly between versions, and the current release should be considered experimental.
+## Install on Windows
 
-## License
+Download the Windows installer provided with the release, run it, and follow the installation prompts.
 
-License information will be added in a future release.
+If no Windows installer is attached, that release does not include a packaged Windows build.
 
+## Install on Arch Linux
 
-**Prerelease for Arch Linux x86_64.** This release brings a redesigned interface, five themes, live resource charts, saved preferences, and more reliable process, storage, network, and console tools.
+### Pacman package
 
-## Install on Arch
-
-Download `nexus-0.3.0-1-x86_64.pkg.tar.zst` from this release, then run from its download folder:
+If the release includes `nexus-0.3.0-1-x86_64.pkg.tar.zst`, download it and run:
 
 ```bash
 sudo pacman -U ./nexus-0.3.0-1-x86_64.pkg.tar.zst
 nexus
 ```
 
-Pacman resolves `webkit2gtk-4.1`, `gtk3`, `iproute2`, and `iputils`. Launch from your ordinary graphical desktop session. Node.js and Rust are unnecessary for running the package.
+Launch Nexus from your graphical desktop session. Node.js and Rust are not required to run the compiled application.
 
-Read the [complete installation guide](https://github.com/THeX19/Nexus/blob/v0.3.0/docs/INSTALL-ARCH.md) for verification, per-user installation, upgrades, removal, and troubleshooting.
+### Per-user installation
 
-## Per-user alternative
-
-Download `nexus-0.3.0-linux-x86_64.tar.gz` and run:
+Download `nexus-0.3.0-linux-x86_64.tar.gz`, then run:
 
 ```bash
 sudo pacman -S --needed webkit2gtk-4.1 gtk3 iproute2 iputils python
@@ -49,25 +49,83 @@ cd nexus-0.3.0-linux-x86_64
 ~/.local/bin/nexus
 ```
 
-## Changes
+See the [Arch installation guide](https://github.com/THeX19/Nexus/blob/v0.3.0/docs/INSTALL-ARCH.md) for verification, upgrades, removal, and troubleshooting.
 
-- Responsive sidebar, consistent layouts, custom icon, keyboard navigation, and five themes.
-- Live CPU/memory charts with bounded session history and truthful telemetry status.
-- Persisted settings, working refresh interval, reduced motion, and in-app resource alerts.
-- Process pagination, sorting, search, pause/resume, confirmation, and PID protection.
-- Recursive folder sizes, cancellation, skipped-entry reporting, and stale-result handling.
-- IPv6 parsing, custom ping hosts, copying, and clearer network states.
-- Console history, session persistence, exit codes, output limits, 30-second timeout, and Unix descendant cleanup.
-- English, German, and French labels; MIT licensing; versioned packaging and checksums.
+## Interface and Functionality
 
-## Assets and verification
+- Responsive sidebar, consistent layouts, a custom icon, and five themes.
+- Live resource charts with bounded history and connection status.
+- Saved preferences, configurable refresh intervals, reduced motion, and in-app resource alerts.
+- Process pagination, sorting, filtering, pause/resume, and termination confirmation.
+- Storage scans with nested folder sizes, cancellation, and stale-result handling.
+- Network diagnostics with IPv6 information and custom ping hosts.
+- Command history, session persistence, exit codes, output limits, and a 30-second timeout.
 
-The pacman package is recommended. The tar.gz includes the native executable, installer, icon, README, and license. The source ZIP includes source, tests, build scripts, and documentation. `SHA256SUMS` covers the three assets; download them together and run `sha256sum --check SHA256SUMS`, or follow the installation guide to verify just one.
+## Latest Source Improvements
 
-## Validation and remaining checks
+- More reliable startup CPU measurements.
+- Dashboard CPU sampling isolated from process polling.
+- Process CPU percentages normalized to total machine capacity.
+- Memory and storage gauges display percentages to one decimal place.
+- Duplicate and outdated telemetry no longer distort chart history.
+- Fixed stale polling responses when refresh settings or polling state change.
+- Reduced unnecessary CPU reads, interface updates, and repeated filtering work.
 
-Production build, seven frontend tests, eight Rust tests, Rust Clippy with warnings denied, archive inspection, installer checks, and checksum verification passed locally. Desktop interaction, installation on a separate Arch machine, and execution of the GitHub workflow remain pending. Screenshots could not be captured in the restricted development session. See the [release checklist](https://github.com/THeX19/Nexus/blob/v0.3.0/docs/RELEASE-CHECKLIST.md).
+These improvements are in the current source. The existing 0.3.0 download archives need rebuilding before they include these changes.
 
-There is no automatic updater. These builds target Arch Linux x86_64; other platforms are unverified. The console is a bounded command runner, not an interactive terminal. See README for all current limits.
+## Release Downloads
+
+Depending on the release, attached files may include:
+
+- **Windows installer:** installs Nexus on Windows.
+- **Arch Linux pacman package:** installs Nexus through `pacman`.
+- **Linux `.tar.gz` archive:** contains the compiled application, installer, and supporting files.
+- **Source ZIP:** contains source code, tests, build scripts, and documentation.
+- **SHA256SUMS:** contains checksums for the matching release assets.
+
+Download the package intended for your operating system. The source ZIP is for development or building Nexus yourself.
+
+### Verify Linux downloads
+
+Download the files listed in `SHA256SUMS`, then run:
+
+```bash
+sha256sum --check SHA256SUMS
+```
+
+Always use the checksum file supplied with the same release assets.
+
+## Beta Status and Testing
+
+For the latest source changes, all **nine frontend tests** and the **production TypeScript/Vite build** pass.
+
+Two additional Rust regression tests have been added. Rust tests, formatting, and Clippy for these changes remain pending because Cargo was unavailable in the development environment.
+
+Native desktop verification of the latest changes, platform-specific testing, installation on a separate Arch machine, and verification of the GitHub release workflow remain pending.
+
+Beta releases may contain bugs, and features may change between versions.
+
+## Known Limitations
+
+- No automatic updater.
+- Linux packages target Arch Linux x86_64.
+- Platform-specific features and behavior may differ.
+- The built-in console is a bounded command runner, not an interactive terminal.
+
+## Report a Bug
+
+Please include:
+
+- Your Nexus version.
+- Your operating system and version.
+- Steps to reproduce the problem.
+- What you expected and what happened.
+- Relevant screenshots or error messages.
+
+[Report an issue](https://github.com/THeX19/Nexus/issues)
+
+## License
+
+Nexus is licensed under the **MIT License**. See the included `LICENSE` file.
 
 
