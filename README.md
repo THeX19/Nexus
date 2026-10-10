@@ -21,9 +21,53 @@ Nexus is actively being developed. Features may change significantly between ver
 
 License information will be added in a future release.
 
-## Screenshots
 
-<img width="1304" height="509" alt="copy 3" src="https://github.com/user-attachments/assets/5aafc500-d815-4f92-8979-60c35a458ea6" />
-<img width="783" height="488" alt="copy 2" src="https://github.com/user-attachments/assets/96f2c4ff-9a73-4111-81d7-9b92f674bcc3" />
-<img width="782" height="485" alt="ChatGPT Image Sep 7, 2026, 11_38_53 AM" src="https://github.com/user-attachments/assets/36697685-2427-42cc-b799-f5d3a5788264" />
+**Prerelease for Arch Linux x86_64.** This release brings a redesigned interface, five themes, live resource charts, saved preferences, and more reliable process, storage, network, and console tools.
+
+## Install on Arch
+
+Download `nexus-0.3.0-1-x86_64.pkg.tar.zst` from this release, then run from its download folder:
+
+```bash
+sudo pacman -U ./nexus-0.3.0-1-x86_64.pkg.tar.zst
+nexus
+```
+
+Pacman resolves `webkit2gtk-4.1`, `gtk3`, `iproute2`, and `iputils`. Launch from your ordinary graphical desktop session. Node.js and Rust are unnecessary for running the package.
+
+Read the [complete installation guide](https://github.com/THeX19/Nexus/blob/v0.3.0/docs/INSTALL-ARCH.md) for verification, per-user installation, upgrades, removal, and troubleshooting.
+
+## Per-user alternative
+
+Download `nexus-0.3.0-linux-x86_64.tar.gz` and run:
+
+```bash
+sudo pacman -S --needed webkit2gtk-4.1 gtk3 iproute2 iputils python
+tar -xzf nexus-0.3.0-linux-x86_64.tar.gz
+cd nexus-0.3.0-linux-x86_64
+./install.sh
+~/.local/bin/nexus
+```
+
+## Changes
+
+- Responsive sidebar, consistent layouts, custom icon, keyboard navigation, and five themes.
+- Live CPU/memory charts with bounded session history and truthful telemetry status.
+- Persisted settings, working refresh interval, reduced motion, and in-app resource alerts.
+- Process pagination, sorting, search, pause/resume, confirmation, and PID protection.
+- Recursive folder sizes, cancellation, skipped-entry reporting, and stale-result handling.
+- IPv6 parsing, custom ping hosts, copying, and clearer network states.
+- Console history, session persistence, exit codes, output limits, 30-second timeout, and Unix descendant cleanup.
+- English, German, and French labels; MIT licensing; versioned packaging and checksums.
+
+## Assets and verification
+
+The pacman package is recommended. The tar.gz includes the native executable, installer, icon, README, and license. The source ZIP includes source, tests, build scripts, and documentation. `SHA256SUMS` covers the three assets; download them together and run `sha256sum --check SHA256SUMS`, or follow the installation guide to verify just one.
+
+## Validation and remaining checks
+
+Production build, seven frontend tests, eight Rust tests, Rust Clippy with warnings denied, archive inspection, installer checks, and checksum verification passed locally. Desktop interaction, installation on a separate Arch machine, and execution of the GitHub workflow remain pending. Screenshots could not be captured in the restricted development session. See the [release checklist](https://github.com/THeX19/Nexus/blob/v0.3.0/docs/RELEASE-CHECKLIST.md).
+
+There is no automatic updater. These builds target Arch Linux x86_64; other platforms are unverified. The console is a bounded command runner, not an interactive terminal. See README for all current limits.
+
 
