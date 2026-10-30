@@ -33,7 +33,6 @@ If the release includes `nexus-0.3.0-1-x86_64.pkg.tar.zst`, download it and run:
 ```bash
 sudo pacman -U ~/Downloads/nexus-*.pkg.tar.zst
 
-
 ```
 
 
