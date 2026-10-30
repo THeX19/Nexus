@@ -31,9 +31,12 @@ If no Windows installer is attached, that release does not include a packaged Wi
 If the release includes `nexus-0.3.0-1-x86_64.pkg.tar.zst`, download it and run:
 
 ```bash
-sudo pacman -U ./nexus-0.3.0-1-x86_64.pkg.tar.zst
-nexus
+sudo pacman -U ~/Downloads/nexus-*.pkg.tar.zst
+
+
 ```
+
+
 
 Launch Nexus from your graphical desktop session. Node.js and Rust are not required to run the compiled application.
 
