@@ -154,7 +154,7 @@ fn get_disk_usage(path: String, depth: usize, _state: State<'_, SystemState>) ->
     let mut children = Vec::new();
 
     // We only scan to the requested depth for the initial view
-    for entry in WalkDir::new(&path).into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(&path).max_depth(depth).into_iter().filter_map(|e| e.ok()) {
         let current_depth = entry.depth();
         if current_depth == 0 { continue; } // root is handled by the caller
         if current_depth > depth { continue; } // respect the requested depth

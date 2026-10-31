@@ -2,11 +2,118 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #0a0a0a;
-  color: #fafafa;
+/* ───────────── Nexus design tokens ─────────────
+   Colors are RGB triplets so Tailwind can apply alpha.
+   Graphite dark is the default; light follows the system
+   unless the user picks a theme explicitly (data-theme). */
+:root {
+  --canvas: 17 18 20;
+  --surface: 23 24 27;
+  --raised: 30 31 35;
+  --overlay: 36 37 42;
+  --line: 255 255 255;
+  --line-a: 0.07;
+  --line-strong: 52 54 60;
+  --fg: 236 237 240;
+  --muted: 160 163 172;
+  --subtle: 110 113 122;
+  --accent: 129 140 248;
+  --accent-fg: 14 15 30;
+  --danger: 244 112 103;
+  --warning: 240 180 80;
+  --success: 92 200 140;
+  --shadow-a: 0.5;
+
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+
+  --row-h: 34px;
+  --ctl-h: 30px;
+  --gutter: 20px;
+
+  color-scheme: dark;
+}
+
+[data-accent='teal'] { --accent: 45 196 180; --accent-fg: 6 24 22; }
+[data-accent='amber'] { --accent: 236 170 70; --accent-fg: 30 18 4; }
+[data-accent='rose'] { --accent: 236 110 140; --accent-fg: 32 8 14; }
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) { color-scheme: light; }
+}
+:root[data-theme='light'] { color-scheme: light; }
+
+:root[data-theme='light'],
+:root[data-theme='system'][data-system='light'] {
+  --canvas: 244 244 246;
+  --surface: 252 252 253;
+  --raised: 255 255 255;
+  --overlay: 255 255 255;
+  --line: 15 18 30;
+  --line-a: 0.09;
+  --line-strong: 214 216 222;
+  --fg: 22 23 28;
+  --muted: 88 92 104;
+  --subtle: 128 132 144;
+  --accent: 88 92 220;
+  --accent-fg: 255 255 255;
+  --danger: 200 60 50;
+  --warning: 170 110 10;
+  --success: 30 140 80;
+  --shadow-a: 0.14;
+}
+:root[data-theme='light'][data-accent='teal'],
+:root[data-system='light'][data-theme='system'][data-accent='teal'] { --accent: 10 140 128; }
+:root[data-theme='light'][data-accent='amber'],
+:root[data-system='light'][data-theme='system'][data-accent='amber'] { --accent: 180 110 0; --accent-fg: 255 255 255; }
+:root[data-theme='light'][data-accent='rose'],
+:root[data-system='light'][data-theme='system'][data-accent='rose'] { --accent: 200 50 90; --accent-fg: 255 255 255; }
+
+[data-density='compact'] { --row-h: 28px; --ctl-h: 26px; --gutter: 14px; }
+[data-density='comfortable'] { --row-h: 40px; --ctl-h: 34px; --gutter: 28px; }
+
+[data-motion='reduced'] { --dur-fast: 0ms; --dur-base: 0ms; }
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) { --dur-fast: 0ms; --dur-base: 0ms; }
+  :root:not([data-motion='full']) *, :root:not([data-motion='full']) *::before {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    margin: 0;
+    @apply bg-canvas text-fg font-sans text-base antialiased;
+    font-feature-settings: 'cv11', 'ss01', 'tnum' 0;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+    user-select: none;
+  }
+  input, textarea, .selectable { user-select: text; }
+  *, ::before, ::after { border-color: rgb(var(--line) / var(--line-a)); }
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 1px;
+    border-radius: 4px;
+  }
+  ::selection { background: rgb(var(--accent) / 0.3); }
+
+  /* Slim, theme-aware scrollbars (WebKitGTK) */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--muted) / 0.25);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-color: rgb(var(--muted) / 0.45); }
+  ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+}
+
+@layer utilities {
+  .tabular { font-variant-numeric: tabular-nums; }
+  .hairline { border-color: rgb(var(--line) / var(--line-a)); }
 }

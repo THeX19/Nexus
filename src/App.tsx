@@ -1,75 +1,65 @@
-import React, { useState } from 'react';
-import { LayoutDashboard, Activity, HardDrive, Network, Terminal, Search, Settings, HelpCircle } from 'lucide-react';
-import { Dashboard } from './components/Dashboard';
-import { ProcessManager } from './components/ProcessManager';
-import { StorageAnalyzer } from './components/StorageAnalyzer';
-import { NetworkDiagnostics } from './components/NetworkDiagnostics';
-import { SystemSearch } from './components/SystemSearch';
+import React, { Suspense, lazy } from 'react';
+import { Sidebar } from './shell/Sidebar';
+import { TopBar } from './shell/TopBar';
+import { CommandPalette } from './shell/CommandPalette';
+import { useUiStore, PageId } from './store/useUiStore';
+import { useTelemetry } from './hooks/useTelemetry';
+import { useAppearance } from './hooks/useAppearance';
+import { useHotkeys } from './hooks/useHotkeys';
+import { ALL_PAGES } from './lib/nav';
+import { Spinner, Toaster } from './ui';
+import { Dashboard } from './pages/Dashboard';
+
+// Overview is eager (first paint); every other screen is code-split and loaded on first visit.
+const pages: Record<PageId, React.ComponentType> = {
+  dashboard: Dashboard,
+  processes: lazy(() => import('./pages/Processes').then((m) => ({ default: m.Processes }))),
+  storage: lazy(() => import('./pages/Storage').then((m) => ({ default: m.Storage }))),
+  network: lazy(() => import('./pages/Network').then((m) => ({ default: m.Network }))),
+  search: lazy(() => import('./pages/SystemSearch').then((m) => ({ default: m.SystemSearch }))),
+  terminal: lazy(() => import('./pages/Terminal').then((m) => ({ default: m.Terminal }))),
+  settings: lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings }))),
+  help: lazy(() => import('./pages/Help').then((m) => ({ default: m.Help }))),
+};
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  useAppearance();
+  useTelemetry();
+  const page = useUiStore((s) => s.page);
+  const { setPage, toggleSidebar, setPaletteOpen } = useUiStore.getState();
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'processes', label: 'Processes', icon: Activity },
-    { id: 'storage', label: 'Storage', icon: HardDrive },
-    { id: 'network', label: 'Network', icon: Network },
-    { id: 'terminal', label: 'Terminal', icon: Terminal },
-    { id: 'search', label: 'Search', icon: Search },
-    { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'help', label: 'Help', icon: HelpCircle },
-  ];
+  useHotkeys([
+    { combo: 'mod+k', handler: () => setPaletteOpen(!useUiStore.getState().paletteOpen) },
+    { combo: 'mod+p', handler: () => setPaletteOpen(true) },
+    { combo: 'mod+b', handler: toggleSidebar },
+    { combo: 'f1', handler: () => setPage('help') },
+    { combo: '?', handler: () => setPage('help') },
+    ...ALL_PAGES.filter((p) => p.hotkey).map((p) => ({ combo: `mod+${p.hotkey}`, handler: () => setPage(p.id) })),
+  ]);
 
+  const Current = pages[page];
   return (
-    <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold tracking-tighter text-white">NEXUS</h1>
-          <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider mt-1">System Command Center</p>
-        </div>
-
-        <nav className="flex-1 px-3 space-y-1">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === item.id
-                  ? 'bg-zinc-800 text-white'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-zinc-800">
-          <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs text-zinc-400 font-mono">Local Session Active</span>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        {activeTab === 'dashboard' && <Dashboard />}
-        {activeTab === 'processes' && <ProcessManager />}
-        {activeTab === 'storage' && <StorageAnalyzer />}
-        {activeTab === 'network' && <NetworkDiagnostics />}
-        {activeTab === 'search' && <SystemSearch />}
-        {activeTab !== 'dashboard' && activeTab !== 'processes' && activeTab !== 'storage' && activeTab !== 'network' && activeTab !== 'search' && (
-          <div className="flex items-center justify-center h-full text-zinc-500">
-            <div className="text-center">
-              <p className="text-xl font-medium">{navItems.find(i => i.id === activeTab)?.label} is under construction</p>
-              <p className="text-sm opacity-60">This module will be implemented in the next phase.</p>
-            </div>
-          </div>
-        )}
-      </main>
+    <div className="flex h-full overflow-hidden">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:px-3 focus:py-1.5 focus:bg-overlay focus:rounded-md">
+        Skip to content
+      </a>
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <TopBar />
+        <main id="main" tabIndex={-1} className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
+          <Suspense
+            fallback={
+              <div className="grid place-items-center h-full">
+                <Spinner />
+              </div>
+            }
+          >
+            <Current key={page} />
+          </Suspense>
+        </main>
+      </div>
+      <CommandPalette />
+      <Toaster />
     </div>
   );
 }
